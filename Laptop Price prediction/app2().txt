@@ -1,0 +1,63 @@
+import numpy as np
+import pickle
+import streamlit as st
+
+# loading the saved model
+loaded_model = pickle.load(open("C:/Users/1234/Downloads/cp2 final report/pipe1.pkl", 'rb'))
+
+# creating a function for Prediction
+def Laptop_price_prediction(input_data):
+    # changing the input_data to numpy array
+    input_data_as_numpy_array = np.asarray(input_data)
+    
+    # reshape the array as we are predicting for one instance
+    input_data_reshaped = input_data_as_numpy_array.reshape(1, -1)
+    
+    # making prediction
+    prediction = loaded_model.predict(input_data_reshaped)
+    
+    # convert log prediction to actual price
+    predicted_price = np.exp(prediction)
+    return round(predicted_price[0], 2)
+
+def main():
+    # giving a title
+    st.title('Laptop Price Prediction')
+    
+    # getting the input data from the user
+    Company = st.text_input("Enter the company name:")
+    TypeName = st.text_input("Enter the type name:")
+    Ram = st.number_input("Enter the RAM size (GB):", min_value=1, step=1)
+    Weight = st.number_input("Enter the weight (kg):", min_value=0.1, step=0.1)
+    Touchscreen = st.selectbox("Does it have a touchscreen?", ["No", "Yes"])
+    Ips = st.selectbox("Does it have an IPS display?", ["No", "Yes"])
+    ppi = st.number_input("Enter the PPI (Pixels Per Inch):", min_value=1, step=1)
+    Cpu_brand = st.text_input("Enter the CPU brand:")
+    HDD = st.number_input("Enter the HDD size (GB):", min_value=0, step=1)
+    SSD = st.number_input("Enter the SSD size (GB):", min_value=0, step=1)
+    Gpu_brand = st.text_input("Enter the GPU brand:")
+    os = st.text_input("Enter the operating system:")
+
+    # Converting categorical variables to numeric
+    Touchscreen = 1 if Touchscreen == "Yes" else 0
+    Ips = 1 if Ips == "Yes" else 0
+    
+    # Ensure all required fields are provided
+    if not Company or not TypeName or not Cpu_brand or not Gpu_brand or not os:
+        st.error("Please fill all the required fields.")
+        return
+    
+    # code for Prediction
+    Price = ' '
+    
+    # creating a button for Prediction
+    if st.button('Price Result'):
+        try:
+            input_data = [Company, TypeName, Ram, Weight, Touchscreen, Ips, ppi, Cpu_brand, HDD, SSD, Gpu_brand, os]
+            Price = Laptop_price_prediction(input_data)
+            st.success(f"The Final Laptop Price is: ${Price}")
+        except ValueError as e:
+            st.error(f"Error: {e}")
+
+if __name__ == '__main__':
+    main()
